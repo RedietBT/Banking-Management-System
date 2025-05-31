@@ -7,13 +7,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface AccountsRepo extends JpaRepository <Accounts, Long> {
 
     Optional<Accounts> findByStatus(AccountStatus accountStatus);
-    Optional<Accounts> findByUserPhone(String phone);
+    List<Accounts> findByUserPhone(String phone);
     Optional<Accounts> findByType(AccountType accountType);
     Optional<Accounts> findByUser_Id(Long userid);
     Optional<Accounts> findByAccountNumber(Long accountNumber);

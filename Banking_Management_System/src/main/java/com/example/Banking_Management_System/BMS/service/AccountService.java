@@ -17,11 +17,13 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class AccuntService {
+public class AccountService {
 
     private final AccountsRepo accountsRepo;
     private final UserRepository userRepository;
@@ -149,9 +151,19 @@ public class AccuntService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<AccountsResponse> getAccountDetailsForCurrentUserByPhoneNo(String phone){
-        return accountsRepo.findByUserPhone(phone)
-                .map(this::mapToAccountResponse);
+    public List<AccountsResponse> getAccountDetailsForCurrentUserByPhoneNo(String userEmail){
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + userEmail));
+
+        String userPhone = user.getPhone();
+        if(userPhone == null || userPhone.trim().isEmpty()){
+            throw new IllegalStateException("Phone number not available for user: " + userPhone);
+        }
+
+        List<Accounts> accounts= accountsRepo.findByUserPhone(userPhone);
+        return accounts.stream()
+                .map(this::mapToAccountResponse)
+                .collect(Collectors.toList());
     }
 
     //=======================
