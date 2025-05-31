@@ -71,8 +71,14 @@ public class AccuntService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<AccountsResponse> getAccountDetailsForCurrentUser(Long accountNumber){
+    public Optional<AccountsResponse> getAccountDetailsForCurrentUserByAccountNo(Long accountNumber){
         return accountsRepo.findByAccountNumber(accountNumber)
+                .map(this::mapToAccountResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<AccountsResponse> getAccountDetailsForCurrentUserByPhoneNo(String phone){
+        return accountsRepo.findByUserPhone(phone)
                 .map(this::mapToAccountResponse);
     }
 
