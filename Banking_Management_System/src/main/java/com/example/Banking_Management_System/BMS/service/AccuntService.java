@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.time.LocalDate;
@@ -98,7 +99,7 @@ public class AccuntService {
         Accounts account = accountsRepo.findById(accountId)
                 .orElseThrow(() -> new EntityNotFoundException("Account not found with ID: " + accountId));
         if (account.getStatus() != AccountStatus.ACTIVE){
-            throw new IllegalStateException("Account with ID " + accountId + " is not in ACTIVE status and cannot be approved. Current status: " + account.getStatus());
+            throw new IllegalStateException("Account with ID " + accountId + " is not in ACTIVE status and cannot be frozen. Current status: " + account.getStatus());
         }
         account.setStatus(AccountStatus.FROZEN);
         Accounts updatedAccount = accountsRepo.save(account);
@@ -116,6 +117,24 @@ public class AccuntService {
             throw new IllegalStateException("Account with ID " + accountId + " is not in FROZEN status and cannot be approved. Current status: " + account.getStatus());
         }
         account.setStatus(AccountStatus.ACTIVE);
+        Accounts updatedAccount = accountsRepo.save(account);
+        return mapToAccountResponse(updatedAccount);
+    }
+
+    //===============
+    //Close Account
+    //===============
+    @Transactional
+    public AccountsResponse closeAccount(Long accountId){
+        Accounts account = accountsRepo.findById(accountId)
+                .orElseThrow(() -> new EntityNotFoundException("Account not found with ID: " + accountId));
+        if (account.getStatus() != AccountStatus.FROZEN &&
+                account.getStatus() != AccountStatus.ACTIVE &&
+        account.getStatus() != AccountStatus.PENDING) {
+            throw new IllegalStateException("Account with ID " + accountId + " is not in FROZEN, ACTIVE or PENDING status and cannot be closed. Current status: " + account.getStatus());
+        }
+        account.setStatus(AccountStatus.CLOSED);
+        account.setBalance(BigDecimal.ZERO);
         Accounts updatedAccount = accountsRepo.save(account);
         return mapToAccountResponse(updatedAccount);
     }
