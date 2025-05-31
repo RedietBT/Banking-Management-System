@@ -79,13 +79,28 @@ public class AccuntService {
     //Approve Account
     //===============
     @Transactional
-    public AccountsResponse approvePendingAccounts(Long accountId){
+    public AccountsResponse approvePendingAccount(Long accountId){
         Accounts account = accountsRepo.findById(accountId)
                 .orElseThrow(() -> new EntityNotFoundException("Account not found with ID: " + accountId));
         if (account.getStatus() != AccountStatus.PENDING){
             throw new IllegalStateException("Account with ID " + accountId + " is not in PENDING status and cannot be approved. Current status: " + account.getStatus());
         }
         account.setStatus(AccountStatus.ACTIVE);
+        Accounts updatedAccount = accountsRepo.save(account);
+        return mapToAccountResponse(updatedAccount);
+    }
+
+    //===============
+    //Approve Account
+    //===============
+    @Transactional
+    public AccountsResponse freezeAccount(Long accountId){
+        Accounts account = accountsRepo.findById(accountId)
+                .orElseThrow(() -> new EntityNotFoundException("Account not found with ID: " + accountId));
+        if (account.getStatus() != AccountStatus.ACTIVE){
+            throw new IllegalStateException("Account with ID " + accountId + " is not in ACTIVE status and cannot be approved. Current status: " + account.getStatus());
+        }
+        account.setStatus(AccountStatus.FROZEN);
         Accounts updatedAccount = accountsRepo.save(account);
         return mapToAccountResponse(updatedAccount);
     }
