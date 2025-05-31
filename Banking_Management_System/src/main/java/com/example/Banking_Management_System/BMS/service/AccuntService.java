@@ -91,7 +91,7 @@ public class AccuntService {
     }
 
     //===============
-    //Approve Account
+    //Freeze Account
     //===============
     @Transactional
     public AccountsResponse freezeAccount(Long accountId){
@@ -101,6 +101,21 @@ public class AccuntService {
             throw new IllegalStateException("Account with ID " + accountId + " is not in ACTIVE status and cannot be approved. Current status: " + account.getStatus());
         }
         account.setStatus(AccountStatus.FROZEN);
+        Accounts updatedAccount = accountsRepo.save(account);
+        return mapToAccountResponse(updatedAccount);
+    }
+
+    //===============
+    //Unfreeze Account
+    //===============
+    @Transactional
+    public AccountsResponse unFreezeAccount(Long accountId){
+        Accounts account = accountsRepo.findById(accountId)
+                .orElseThrow(() -> new EntityNotFoundException("Account not found with ID: " + accountId));
+        if (account.getStatus() != AccountStatus.FROZEN){
+            throw new IllegalStateException("Account with ID " + accountId + " is not in FROZEN status and cannot be approved. Current status: " + account.getStatus());
+        }
+        account.setStatus(AccountStatus.ACTIVE);
         Accounts updatedAccount = accountsRepo.save(account);
         return mapToAccountResponse(updatedAccount);
     }
