@@ -2,10 +2,12 @@ package com.example.Banking_Management_System.BMS.service;
 
 import com.example.Banking_Management_System.BMS.DTO.AccountRequest;
 import com.example.Banking_Management_System.BMS.DTO.AccountsResponse;
+import com.example.Banking_Management_System.BMS.model.AccountStatus;
 import com.example.Banking_Management_System.BMS.model.Accounts;
 import com.example.Banking_Management_System.BMS.repository.AccountsRepo;
 import com.example.Banking_Management_System.userAuth.user.User;
 import com.example.Banking_Management_System.userAuth.user.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -23,6 +25,9 @@ public class AccuntService {
     private final AccountsRepo accountsRepo;
     private final UserRepository userRepository;
 
+    //==================
+    // Create an account
+    //==================
     @Transactional
     public Accounts createAccount(String userEmail, AccountRequest request) {
         // Find the user
@@ -70,6 +75,24 @@ public class AccuntService {
         return accountsRepo.save(account);
     }
 
+    //===============
+    //Approve Account
+    //===============
+    @Transactional
+    public AccountsResponse approvePendingAccounts(Long accountId){
+        Accounts account = accountsRepo.findById(accountId)
+                .orElseThrow(() -> new EntityNotFoundException("Account not found with ID: " + accountId));
+        if (account.getStatus() != AccountStatus.PENDING){
+            throw new IllegalStateException("Account with ID " + accountId + " is not in PENDING status and cannot be approved. Current status: " + account.getStatus());
+        }
+        account.setStatus(AccountStatus.ACTIVE);
+        Accounts updatedAccount = accountsRepo.save(account);
+        return mapToAccountResponse(updatedAccount);
+    }
+
+    //====================
+    // Get Account Details
+    //====================
     @Transactional(readOnly = true)
     public Optional<AccountsResponse> getAccountDetailsForCurrentUserByAccountNo(Long accountNumber){
         return accountsRepo.findByAccountNumber(accountNumber)
@@ -82,6 +105,9 @@ public class AccuntService {
                 .map(this::mapToAccountResponse);
     }
 
+    //=======================
+    //Map to Account Response
+    //=======================
     private AccountsResponse mapToAccountResponse (Accounts accounts){
         return AccountsResponse.builder()
                 .id(accounts.getId())
