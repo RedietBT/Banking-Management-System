@@ -20,6 +20,9 @@ public class AccountsResponse {
     private String applicantsFirstname;
     private String applicantsLastname;
     private String applicantsEmail;
+    private String accountNumber;
+    private Long userId;
+    private String phone;
     private BigDecimal balance;
     private AccountType accountType;
     private AccountStatus accountStatus;

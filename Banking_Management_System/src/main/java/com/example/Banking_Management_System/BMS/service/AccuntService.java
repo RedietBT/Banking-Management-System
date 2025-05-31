@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.time.LocalDate;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +30,7 @@ public class AccuntService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + userEmail));
 
         // Generate a unique 20-digit account number
-        String newAccountNumber;
+        Long newAccountNumber;
         boolean isUnique = false;
         SecureRandom random = new SecureRandom(); // More secure than Random
         int attempts = 0;
@@ -45,7 +47,7 @@ public class AccuntService {
             } while (randomNumber.compareTo(range) > 0);
 
             BigInteger finalNumber = randomNumber.add(min);
-            newAccountNumber = finalNumber.toString(); // Always 20 digits, no leading zeros
+            newAccountNumber = Long.valueOf(finalNumber.toString()); // Always 20 digits, no leading zeros
 
             if (accountsRepo.findByAccountNumber(newAccountNumber).isEmpty()) {
                 isUnique = true;
@@ -61,10 +63,32 @@ public class AccuntService {
         // Create and save the account
         Accounts account = Accounts.builder()
                 .user(user)
-                .accountNumber(newAccountNumber)
+                .accountNumber(String.valueOf(newAccountNumber))
                 .accountType(request.getAccountType())
                 .build();
 
         return accountsRepo.save(account);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<AccountsResponse> getAccountDetailsForCurrentUser(Long accountNumber){
+        return accountsRepo.findByAccountNumber(accountNumber)
+                .map(this::mapToAccountResponse);
+    }
+
+    private AccountsResponse mapToAccountResponse (Accounts accounts){
+        return AccountsResponse.builder()
+                .id(accounts.getId())
+                .accountNumber(accounts.getAccountNumber())
+                .applicantsFirstname(accounts.getUser().getFirstname())
+                .applicantsLastname(accounts.getUser().getLastname())
+                .applicantsEmail(accounts.getUser().getEmail())
+                .phone(accounts.getUser().getPhone())
+                .accountType(accounts.getAccountType())
+                .balance(accounts.getBalance())
+                .accountStatus(accounts.getStatus())
+                .createdAt(LocalDate.from(accounts.getCreatedAt()))
+                .lastUpdated(LocalDate.from(accounts.getUpdatedAt()))
+                .build();
     }
 }
