@@ -6,40 +6,61 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Table
+@Table(name = "accounts")
 public class Accounts {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(unique = true)
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(unique = true, nullable = false, length = 20)
     private String accountNumber;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private AccountType accountType;
 
-    @Column(columnDefinition = 0)
-    private BigDecimal balance;
+    @Column(nullable = false, precision = 19, scale = 2)
+    private BigDecimal balance = BigDecimal.ZERO;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private AccountStatus status;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    private Timestamp createdAt;
-    private Timestamp updatedAt;
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate(){
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+
+        if(this.status == null){
+            this.status= AccountStatus.PENDING;
+        }
+        if(this.balance == null){
+            this.balance = BigDecimal.ZERO;
+        }
+    }
+
+    @PreUpdate
+    protected void onUpdate(){
+        this.updatedAt = LocalDateTime.now();
+    }
 }
