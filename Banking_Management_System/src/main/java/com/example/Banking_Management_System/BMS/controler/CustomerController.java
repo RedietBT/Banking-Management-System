@@ -13,8 +13,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 @RestController
@@ -45,5 +48,20 @@ public class CustomerController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.ok(accountsResponses);
+    }
+
+    @GetMapping("/account/{accountNumber}")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ResponseEntity<AccountsResponse> getMyAccountDetails(@PathVariable String accountNumber){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = authentication.getName();
+        try {
+            Optional<AccountsResponse> accountsResponse = accountService.getAccountDetailsForCurrentUserByAccountNo(userEmail, Long.valueOf(accountNumber));
+            return accountsResponse
+                    .map(ResponseEntity::ok)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account not found with number: " + accountNumber));
+        } catch (AccessDeniedException e) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, e.getMessage());
+        }
     }
 }

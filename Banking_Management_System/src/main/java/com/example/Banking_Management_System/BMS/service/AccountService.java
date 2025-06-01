@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.file.AccessDeniedException;
 import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.util.List;
@@ -145,9 +146,22 @@ public class AccountService {
     // Get Account Details
     //====================
     @Transactional(readOnly = true)
-    public Optional<AccountsResponse> getAccountDetailsForCurrentUserByAccountNo(Long accountNumber){
-        return accountsRepo.findByAccountNumber(accountNumber)
-                .map(this::mapToAccountResponse);
+    public Optional<AccountsResponse> getAccountDetailsForCurrentUserByAccountNo(String userEmail, Long accountNumber) throws AccessDeniedException {
+
+        User currentUser = userRepository.findByEmail(userEmail)
+                .orElseThrow(()-> new UsernameNotFoundException("User not found with email: " + userEmail));
+
+        Optional<Accounts> accountOptional = accountsRepo.findByAccountNumber(accountNumber);
+
+        if(accountOptional.isEmpty()){
+            return Optional.empty();
+        }
+        Accounts account = accountOptional.get();
+
+        if(!account.getUser().getId().equals(currentUser.getId())){
+            throw new AccessDeniedException("Access Denied: Account " + accountNumber + " does not belong to the authenticated user.");
+        }
+        return Optional.of(mapToAccountResponse(account));
     }
 
     @Transactional(readOnly = true)
