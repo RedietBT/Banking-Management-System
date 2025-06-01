@@ -146,12 +146,12 @@ public class AccountService {
     // Get Account Details
     //====================
     @Transactional(readOnly = true)
-    public Optional<AccountsResponse> getAccountDetailsForCurrentUserByAccountNo(String userEmail, Long accountNumber) throws AccessDeniedException {
+    public Optional<AccountsResponse> getAccountDetailsForCurrentUserByAccountNo(String userEmail, String accountNumber) throws AccessDeniedException {
 
         User currentUser = userRepository.findByEmail(userEmail)
                 .orElseThrow(()-> new UsernameNotFoundException("User not found with email: " + userEmail));
 
-        Optional<Accounts> accountOptional = accountsRepo.findByAccountNumber(accountNumber);
+        Optional<Accounts> accountOptional = accountsRepo.findByAccountNumber(Long.valueOf(accountNumber));
 
         if(accountOptional.isEmpty()){
             return Optional.empty();
@@ -161,6 +161,18 @@ public class AccountService {
         if(!account.getUser().getId().equals(currentUser.getId())){
             throw new AccessDeniedException("Access Denied: Account " + accountNumber + " does not belong to the authenticated user.");
         }
+        return Optional.of(mapToAccountResponse(account));
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<AccountsResponse> getAccountDetailsByAccountNo(String accountNumber) throws AccessDeniedException {
+
+        Optional<Accounts> accountOptional = accountsRepo.findByAccountNumber(Long.valueOf(accountNumber));
+
+        if(accountOptional.isEmpty()){
+            return Optional.empty();
+        }
+        Accounts account = accountOptional.get();
         return Optional.of(mapToAccountResponse(account));
     }
 
@@ -175,6 +187,15 @@ public class AccountService {
         }
 
         List<Accounts> accounts= accountsRepo.findByUserPhone(userPhone);
+        return accounts.stream()
+                .map(this::mapToAccountResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<AccountsResponse> getAllAccounts() {
+
+        List<Accounts> accounts = accountsRepo.findAll();
         return accounts.stream()
                 .map(this::mapToAccountResponse)
                 .collect(Collectors.toList());

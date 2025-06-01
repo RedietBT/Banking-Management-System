@@ -56,7 +56,7 @@ public class CustomerController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = authentication.getName();
         try {
-            Optional<AccountsResponse> accountsResponse = accountService.getAccountDetailsForCurrentUserByAccountNo(userEmail, Long.valueOf(accountNumber));
+            Optional<AccountsResponse> accountsResponse = accountService.getAccountDetailsForCurrentUserByAccountNo(userEmail, (accountNumber));
             return accountsResponse
                     .map(ResponseEntity::ok)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account not found with number: " + accountNumber));
