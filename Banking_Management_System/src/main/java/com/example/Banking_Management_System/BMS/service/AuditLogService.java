@@ -3,6 +3,7 @@ package com.example.Banking_Management_System.BMS.service;
 import com.example.Banking_Management_System.BMS.DTO.AuditLogResponse;
 import com.example.Banking_Management_System.BMS.model.AuditLog;
 import com.example.Banking_Management_System.BMS.repository.AuditLogRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -11,13 +12,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class AuditLogService {
 
     private final AuditLogRepository auditLogRepository;
 
-    public AuditLogService(AuditLogRepository auditLogRepository) {
-        this.auditLogRepository = auditLogRepository;
-    }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW) // Ensures audit log is saved independently
     public void logAction(Long userId, String username, String actionType, String details, String targetEntityType, Long targetEntityId) {

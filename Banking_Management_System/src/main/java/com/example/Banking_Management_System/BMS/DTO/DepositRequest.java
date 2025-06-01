@@ -17,7 +17,7 @@ import java.math.BigDecimal;
 public class DepositRequest {
 
     @NotBlank(message = "Account number is required")
-    private String accountNumber;
+    private Long accountNumber;
 
     @NotNull(message = "Amount is required")
     @DecimalMin(value = "0.01", message = "Deposit amount must be positive")

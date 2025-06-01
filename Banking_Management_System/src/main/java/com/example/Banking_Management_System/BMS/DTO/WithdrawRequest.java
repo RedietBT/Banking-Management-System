@@ -17,7 +17,7 @@ import java.math.BigDecimal;
 public class WithdrawRequest {
 
     @NotBlank(message = "Account number is required")
-    private String accountNumber;
+    private Long accountNumber;
 
     @NotNull(message = "Amount is required")
     @DecimalMin(value = "50", message = "Withdrawal amount must be positive")

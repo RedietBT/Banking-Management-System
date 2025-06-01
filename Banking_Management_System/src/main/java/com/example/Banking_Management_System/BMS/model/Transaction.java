@@ -1,6 +1,7 @@
 package com.example.Banking_Management_System.BMS.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -12,7 +13,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Entity
 @Table(name = "transactions")
-@RequiredArgsConstructor
 public class Transaction {
 
     @Id
@@ -24,7 +24,7 @@ public class Transaction {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id", nullable = false)
-    private Accounts accounts;
+    private Accounts account;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -44,7 +44,7 @@ public class Transaction {
     private String description;
 
     @Column(length = 20)
-    private String relatedAccountNumber;
+    private Long relatedAccountNumber;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime timestamp;
@@ -61,8 +61,8 @@ public class Transaction {
         }
     }
 
-    public Transaction(Accounts accounts, TransactionType type, BigDecimal amount, BigDecimal balanceAfterTransaction, TransactionStatus status, String description, String relatedAccountNumber) {
-        this.accounts = accounts;
+    public Transaction(Accounts account, TransactionType type, BigDecimal amount, BigDecimal balanceAfterTransaction, TransactionStatus status, String description, @NotBlank Long relatedAccountNumber) {
+        this.account = account;
         this.type = type;
         this.amount = amount;
         this.balanceAfterTransaction = balanceAfterTransaction;

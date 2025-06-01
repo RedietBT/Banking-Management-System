@@ -23,7 +23,7 @@ public class Accounts {
     private long id;
 
     @Column(unique = true, nullable = false, length = 20)
-    private String accountNumber;
+    private Long accountNumber;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

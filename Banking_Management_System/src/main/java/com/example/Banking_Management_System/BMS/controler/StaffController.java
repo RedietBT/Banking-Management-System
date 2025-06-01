@@ -19,7 +19,7 @@ public class StaffController {
 
     @GetMapping("/accounts/{accountNumber}")
     @PreAuthorize("hasAnyRole('ADMIN', 'STAFF')")
-    public ResponseEntity<AccountsResponse> getAccountDetailsByAccountNumber(@PathVariable String accountNumber) throws AccessDeniedException {
+    public ResponseEntity<AccountsResponse> getAccountDetailsByAccountNumber(@PathVariable Long accountNumber) throws AccessDeniedException {
         return accountService.getAccountDetailsByAccountNo(accountNumber)
                 .map(ResponseEntity::ok)
                 .orElseThrow();

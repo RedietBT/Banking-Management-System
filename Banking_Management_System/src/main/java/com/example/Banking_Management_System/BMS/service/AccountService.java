@@ -72,7 +72,7 @@ public class AccountService {
         // Create and save the account
         Accounts account = Accounts.builder()
                 .user(user)
-                .accountNumber(String.valueOf(newAccountNumber))
+                .accountNumber(newAccountNumber)
                 .accountType(request.getAccountType())
                 .build();
 
@@ -146,12 +146,12 @@ public class AccountService {
     // Get Account Details
     //====================
     @Transactional(readOnly = true)
-    public Optional<AccountsResponse> getAccountDetailsForCurrentUserByAccountNo(String userEmail, String accountNumber) throws AccessDeniedException {
+    public Optional<AccountsResponse> getAccountDetailsForCurrentUserByAccountNo(String userEmail, Long accountNumber) throws AccessDeniedException {
 
         User currentUser = userRepository.findByEmail(userEmail)
                 .orElseThrow(()-> new UsernameNotFoundException("User not found with email: " + userEmail));
 
-        Optional<Accounts> accountOptional = accountsRepo.findByAccountNumber(Long.valueOf(accountNumber));
+        Optional<Accounts> accountOptional = accountsRepo.findByAccountNumber(accountNumber);
 
         if(accountOptional.isEmpty()){
             return Optional.empty();
@@ -165,9 +165,9 @@ public class AccountService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<AccountsResponse> getAccountDetailsByAccountNo(String accountNumber) throws AccessDeniedException {
+    public Optional<AccountsResponse> getAccountDetailsByAccountNo(Long accountNumber) throws AccessDeniedException {
 
-        Optional<Accounts> accountOptional = accountsRepo.findByAccountNumber(Long.valueOf(accountNumber));
+        Optional<Accounts> accountOptional = accountsRepo.findByAccountNumber(accountNumber);
 
         if(accountOptional.isEmpty()){
             return Optional.empty();

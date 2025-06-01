@@ -10,6 +10,7 @@ import com.example.Banking_Management_System.BMS.repository.TransactionRepositor
 import com.example.Banking_Management_System.userAuth.user.User;
 import com.example.Banking_Management_System.userAuth.user.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -102,7 +103,7 @@ public class TransactionService {
         validateAccountActive(sourceAccount);
 
         // 2. Validate destination account status (no ownership check needed for destination as it can be anyone's account)
-        Accounts destinationAccount = accountRepository.findByAccountNumber(Long.valueOf(request.getDestinationAccountNumber()))
+        Accounts destinationAccount = accountRepository.findByAccountNumber(request.getDestinationAccountNumber())
                 .orElseThrow(() -> new EntityNotFoundException("Destination account not found with number: " + request.getDestinationAccountNumber()));
         validateAccountActive(destinationAccount);
 
@@ -154,7 +155,7 @@ public class TransactionService {
     //getTransactionsForAccount
     //=========================
     @Transactional(readOnly = true)
-    public List<TransactionResponse> getTransactionsForAccount(String userEmail, String accountNumber) {
+    public List<TransactionResponse> getTransactionsForAccount(String userEmail, Long accountNumber) {
         // 1. Validate account ownership
         Accounts account = getAndValidateUserAccount(userEmail, accountNumber);
 
@@ -170,11 +171,11 @@ public class TransactionService {
     //========================
     //getAndValidateUserAccount
     //=========================
-    private Accounts getAndValidateUserAccount(String userEmail, String accountNumber) {
+    private Accounts getAndValidateUserAccount(String userEmail, Long accountNumber) {
         User currentUser = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + userEmail));
 
-        Accounts account = accountRepository.findByAccountNumber(Long.valueOf(accountNumber))
+        Accounts account = accountRepository.findByAccountNumber(accountNumber)
                 .orElseThrow(() -> new EntityNotFoundException("Account not found with number: " + accountNumber));
 
         if (!account.getUser().getId().equals(currentUser.getId())) {
@@ -198,8 +199,8 @@ public class TransactionService {
     private TransactionResponse mapToTransactionResponse(Transaction transaction) {
         return TransactionResponse.builder()
                 .transactionId(transaction.getTransactionId())
-                .sourceAccountNumber(transaction.getType() == TransactionType.TRANSFER_OUT || transaction.getType() == TransactionType.WITHDRAWAL ? transaction.getAccounts().getAccountNumber() : null)
-                .destinationAccountNumber(transaction.getType() == TransactionType.TRANSFER_IN || transaction.getType() == TransactionType.DEPOSIT ? transaction.getAccounts().getAccountNumber() : null)
+                .sourceAccountNumber(transaction.getType() == TransactionType.TRANSFER_OUT || transaction.getType() == TransactionType.WITHDRAWAL ? transaction.getAccount().getAccountNumber() : null)
+                .destinationAccountNumber(transaction.getType() == TransactionType.TRANSFER_IN || transaction.getType() == TransactionType.DEPOSIT ? transaction.getAccount().getAccountNumber() : null)
                 .type(TransactionType.valueOf(String.valueOf(transaction.getType())))
                 .amount(transaction.getAmount())
                 .currentBalance(transaction.getBalanceAfterTransaction())

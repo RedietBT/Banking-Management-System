@@ -53,7 +53,7 @@ public class CustomerController {
 
     @GetMapping("/account/{accountNumber}")
     @PreAuthorize("hasRole('CUSTOMER')")
-    public ResponseEntity<AccountsResponse> getMyAccountDetails(@PathVariable String accountNumber){
+    public ResponseEntity<AccountsResponse> getMyAccountDetails(@PathVariable Long accountNumber){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = authentication.getName();
         try {
@@ -95,7 +95,7 @@ public class CustomerController {
 
     @GetMapping("/account/{accountNumber}/transactions")
     @PreAuthorize("hasRole('CUSTOMER')")
-    public ResponseEntity<List<TransactionResponse>> getAccountTransactions(@PathVariable String accountNumber) {
+    public ResponseEntity<List<TransactionResponse>> getAccountTransactions(@PathVariable Long accountNumber) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userEmail = authentication.getName();
         List<TransactionResponse> transactions = transactionService.getTransactionsForAccount(userEmail, accountNumber);
