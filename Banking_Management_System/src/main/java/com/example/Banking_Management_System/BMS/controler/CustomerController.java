@@ -1,9 +1,9 @@
 package com.example.Banking_Management_System.BMS.controler;
 
-import com.example.Banking_Management_System.BMS.DTO.AccountRequest;
-import com.example.Banking_Management_System.BMS.DTO.AccountsResponse;
+import com.example.Banking_Management_System.BMS.DTO.*;
 import com.example.Banking_Management_System.BMS.model.Accounts;
 import com.example.Banking_Management_System.BMS.service.AccountService;
+import com.example.Banking_Management_System.BMS.service.TransactionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,6 +26,7 @@ import java.util.Optional;
 public class CustomerController {
 
     private final AccountService accountService;
+    private final TransactionService transactionService;
 
     @PostMapping("/apply")
     public ResponseEntity<String> applyForAccount(@Valid @RequestBody AccountRequest request){
@@ -63,5 +64,44 @@ public class CustomerController {
         } catch (AccessDeniedException e) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, e.getMessage());
         }
+    }
+
+    @PostMapping("/deposit")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ResponseEntity<TransactionResponse> deposit(@Valid @RequestBody DepositRequest request) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = authentication.getName();
+        TransactionResponse response = transactionService.deposit(userEmail, request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/withdraw")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ResponseEntity<TransactionResponse> withdraw(@Valid @RequestBody WithdrawRequest request) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = authentication.getName();
+        TransactionResponse response = transactionService.withdraw(userEmail, request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/transfer")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ResponseEntity<List<TransactionResponse>> transfer(@Valid @RequestBody TransferRequest request) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = authentication.getName();
+        List<TransactionResponse> responses = transactionService.transfer(userEmail, request);
+        return ResponseEntity.ok(responses);
+    }
+
+    @GetMapping("/account/{accountNumber}/transactions")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ResponseEntity<List<TransactionResponse>> getAccountTransactions(@PathVariable String accountNumber) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = authentication.getName();
+        List<TransactionResponse> transactions = transactionService.getTransactionsForAccount(userEmail, accountNumber);
+        if (transactions.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(transactions);
     }
 }
