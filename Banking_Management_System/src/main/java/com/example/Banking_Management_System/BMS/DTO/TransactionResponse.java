@@ -1,5 +1,7 @@
 package com.example.Banking_Management_System.BMS.DTO;
 
+import com.example.Banking_Management_System.BMS.model.TransactionStatus;
+import com.example.Banking_Management_System.BMS.model.TransactionType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
