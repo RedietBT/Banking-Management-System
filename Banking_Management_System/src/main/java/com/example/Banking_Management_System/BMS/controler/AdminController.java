@@ -1,5 +1,6 @@
 package com.example.Banking_Management_System.BMS.controler;
 
+import com.example.Banking_Management_System.BMS.DTO.AuditLogResponse;
 import com.example.Banking_Management_System.BMS.service.AccountService;
 import com.example.Banking_Management_System.userAuth.user.User;
 import lombok.RequiredArgsConstructor;
@@ -26,5 +27,15 @@ public class AdminController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.ok(users);
+    }
+
+    @GetMapping("/audit-logs")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<AuditLogResponse>> getAllAuditLogs() {
+        List<AuditLogResponse> auditLogs = auditLogService.getAllAuditLogs();
+        if (auditLogs.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(auditLogs);
     }
 }
