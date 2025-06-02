@@ -21,7 +21,7 @@ import java.util.Optional;
 
 @Controller
 @RestController
-@RequestMapping("api/customer/account")
+@RequestMapping("/api/customer/account")
 @RequiredArgsConstructor
 public class CustomerController {
 

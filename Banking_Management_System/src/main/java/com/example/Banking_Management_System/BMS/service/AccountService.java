@@ -33,32 +33,36 @@ public class AccountService {
     // Create an account
     //==================
     @Transactional
-    public Accounts createAccount(String userEmail, AccountRequest request) {
+    public Accounts createAccount(String userEmail, AccountRequest request) { // Or return AccountDetailsResponse if you have one
         // Find the user
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + userEmail));
 
-        // Generate a unique 20-digit account number
-        Long newAccountNumber;
+        // Generate a unique 15-digit account number (as a Long)
+        Long newAccountNumber; // Keep as Long
         boolean isUnique = false;
-        SecureRandom random = new SecureRandom(); // More secure than Random
+        SecureRandom random = new SecureRandom();
         int attempts = 0;
         final int MAX_ATTEMPTS = 20;
 
         do {
-            BigInteger min = new BigInteger("10000000000000000000"); // smallest 20-digit number
-            BigInteger max = new BigInteger("99999999999999999999");
-            BigInteger range = max.subtract(min);
+            // Smallest 15-digit number
+            BigInteger min = new BigInteger("1000000000000000"); // 1 followed by 14 zeros
+            // Largest 15-digit number
+            BigInteger max = new BigInteger("9999999999999999"); // 15 nines
+            BigInteger range = max.subtract(min).add(BigInteger.ONE); // Inclusive range
 
             BigInteger randomNumber;
             do {
-                randomNumber = new BigInteger(max.bitLength(), random);
-            } while (randomNumber.compareTo(range) > 0);
+                // Generate a random BigInteger within the range's bit length
+                randomNumber = new BigInteger(range.bitLength(), random);
+            } while (randomNumber.compareTo(range) >= 0); // Keep generating if it's outside the desired range
 
             BigInteger finalNumber = randomNumber.add(min);
-            newAccountNumber = Long.valueOf(finalNumber.toString()); // Always 20 digits, no leading zeros
+            newAccountNumber = finalNumber.longValue(); // <--- CORRECTED: Use longValue() as it now fits
 
-            if (accountsRepo.findByAccountNumber(newAccountNumber).isEmpty()) {
+            // Check if the generated account number already exists
+            if (accountsRepo.findByAccountNumber(newAccountNumber).isEmpty()) { // Assuming findByAccountNumber takes Long
                 isUnique = true;
             }
 
@@ -72,7 +76,7 @@ public class AccountService {
         // Create and save the account
         Accounts account = Accounts.builder()
                 .user(user)
-                .accountNumber(newAccountNumber)
+                .accountNumber(newAccountNumber) // Now a Long
                 .accountType(request.getAccountType())
                 .build();
 

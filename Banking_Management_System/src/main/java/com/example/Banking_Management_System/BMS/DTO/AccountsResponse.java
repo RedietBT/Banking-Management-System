@@ -21,7 +21,6 @@ public class AccountsResponse {
     private String applicantsLastname;
     private String applicantsEmail;
     private Long accountNumber;
-    private Long userId;
     private String phone;
     private BigDecimal balance;
     private AccountType accountType;
